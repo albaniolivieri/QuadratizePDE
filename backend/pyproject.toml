@@ -16,7 +16,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv.sources]
-qupde = { git = "https://github.com/albaniolivieri/QuPDE.git" }
+qupde = { git = "https://github.com/pabloskewes/QuPDE.git", branch = "example-introspection" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]

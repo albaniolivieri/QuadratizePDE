@@ -11,10 +11,7 @@ router = APIRouter(prefix="/api")
 
 @router.get("/examples", response_model=list[ExampleSummary])
 async def list_examples_endpoint():
-    try:
-        return list_example_summaries()
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return list_example_summaries()
 
 
 @router.get("/examples/{example_id}", response_model=ExampleDetail)
