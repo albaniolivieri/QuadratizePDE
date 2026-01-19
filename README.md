@@ -1,68 +1,51 @@
 # QuadratizePDE
 
-A web application for quadratizing PDEs (Partial Differential Equations) using the QuPDE library.
+Web app to quadratize PDEs using the QuPDE library. Includes curated examples, custom PDE input (SymPy/Mathematica syntax), and LaTeX-rendered results.
 
-## Architecture
+## Features
+- Browse curated examples and run quadratization with one click
+- Paste custom PDEs (multiple equations supported)
+- Advanced options (search algorithm, sorting, bounds, show traversed nodes)
+- KaTeX rendering for previews and results
 
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Python + FastAPI
-- **PDE Library**: QuPDE
-- **Orchestration**: Docker Compose
-
-## Quick Start
-
-1. Make sure you have Docker and Docker Compose installed
-
-2. Start the application:
+## Run (Docker)
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-3. Access the application:
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8000
-   - API Docs: http://localhost:8000/docs
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+- OpenAPI docs: http://localhost:8000/docs
 
-## Development
-
-### Backend
-- Located in `./backend`
-- FastAPI application with hot-reload enabled
-- Includes QuPDE library for PDE quadratization
-
-### Frontend
-- Located in `./frontend`
-- React + TypeScript with Vite
-- Hot-reload enabled for development
-
-## Project Structure
-
-```
-QuadratizePDE/
-├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   └── main.py
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx
-│   │   ├── App.css
-│   │   ├── main.tsx
-│   │   └── index.css
-│   ├── Dockerfile
-│   ├── package.json
-│   └── vite.config.ts
-├── docker-compose.yml
-└── README.md
+## Run (Local dev)
+Backend:
+```bash
+cd backend
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
-## API Endpoints
+Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- `GET /` - Root endpoint
-- `GET /health` - Health check
-- `POST /quadratize` - Quadratize a PDE (coming soon)
+## API
+- `GET /health`
+- `GET /api/examples`
+- `GET /api/examples/{example_id}`
+- `POST /api/quadratize`
+
+## Screenshots
+### Examples
+![Examples tab](docs/screenshots/app-examples.png)
+
+### Example run (Allen–Cahn)
+![Example results](docs/screenshots/app-example-results.png)
+
+### Custom PDE
+![Custom PDE results](docs/screenshots/app-custom-results.png)
 
 ## License
 
