@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ExampleSummary(BaseModel):
@@ -33,6 +33,16 @@ class QuadratizeRequest(BaseModel):
     max_der_order: int = 2
     nvars_bound: int = 10
     show_nodes: bool = False
+
+    @model_validator(mode="after")
+    def validate_payload(self) -> "QuadratizeRequest":
+        if self.mode == "example":
+            if not self.example_id:
+                raise ValueError("example_id is required.")
+        else:
+            if not self.equations or not self.vars or not self.funcs:
+                raise ValueError("equations, vars, and funcs are required for custom mode.")
+        return self
 
 
 class LatexOutput(BaseModel):
