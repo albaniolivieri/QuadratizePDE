@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import router as api_router
+
 app = FastAPI(title="QuadratizePDE API")
 
 # Configure CORS
@@ -23,14 +25,4 @@ async def health():
     return {"status": "healthy"}
 
 
-@app.post("/quadratize")
-async def quadratize(equation: dict):
-    """
-    Endpoint to quadratize a PDE equation.
-    This is a placeholder - will be implemented later.
-    """
-    return {
-        "status": "not_implemented",
-        "message": "Quadratization endpoint coming soon",
-        "received": equation,
-    }
+app.include_router(api_router)
