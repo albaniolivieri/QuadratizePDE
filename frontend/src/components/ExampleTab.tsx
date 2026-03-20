@@ -7,9 +7,9 @@ type ExampleTabProps = {
   examples: ExampleSummary[]
   selectedId: string | null
   detail: ExampleDetail | null
-  diffOrd: number
+  diffOrd: number | ''
   onSelect: (id: string) => void
-  onDiffOrdChange: (value: number) => void
+  onDiffOrdChange: (value: number | '') => void
   advancedOpen: boolean
   advancedOptions: AdvancedOptionsValue
   onAdvancedToggle: () => void
@@ -34,6 +34,7 @@ export function ExampleTab({
 }: ExampleTabProps) {
   return (
     <div className="tab-panel">
+      <p className="tab-description">Run a PDE example and select the differential order.</p>
       <div className="panel-grid">
         <label className="full">
           Example
@@ -53,28 +54,36 @@ export function ExampleTab({
         </label>
 
         <label>
-          Differentiation Order
+        <span className="label-inline">
+          Differentiation order <span className="muted">(optional)</span>
+          </span>
           <input
             type="number"
-            min={1}
+            min={0}
             max={6}
-            value={diffOrd}
-            onChange={(event) => onDiffOrdChange(Number(event.target.value))}
+            placeholder="Default is 3 * the order of the highest derivative in the equations"
+            value={diffOrd === '' ? '' : diffOrd}
+            onChange={(e) => {
+              const v = e.target.value
+              onDiffOrdChange(v === '' ? '' : Number(v))
+            }}
           />
         </label>
         <div className="helper-card">
           <h4>Description</h4>
           <p>{detail?.description || 'Select an example to see details.'}</p>
         </div>
-        <div className="helper-card">
-          <h4>Equations Preview</h4>
-          {detail?.equations_latex?.length ? (
-            detail.equations_latex.map((eq, index) => (
-              <LatexRenderer key={`${detail.id}-${index}`} latex={eq} />
-            ))
-          ) : (
-            <p className="muted">No equations available.</p>
-          )}
+        <div className="helper-card equations-preview-card full">
+          <h4>Equations preview</h4>
+          <div className="equations-preview-list">
+            {detail?.equations_latex?.length ? (
+              detail.equations_latex.map((eq, index) => (
+                <LatexRenderer key={`${detail.id}-eq-${index}`} latex={eq} />
+              ))
+            ) : (
+              <p className="muted">No equations available.</p>
+            )}
+          </div>
         </div>
       </div>
 

@@ -19,11 +19,10 @@ export type QuadratizeRequest = {
   equations?: string[]
   vars?: string
   funcs?: string
-  format?: 'sympy' | 'mathematica'
-  diff_ord: number
+  format?: 'sympy' | 'mathematica' | 'latex'
+  diff_ord?: number
   search_alg: 'bnb' | 'inn'
   sort_fun: 'by_fun' | 'by_degree_order' | 'by_order_degree'
-  max_der_order: number
   nvars_bound: number
   show_nodes: boolean
 }

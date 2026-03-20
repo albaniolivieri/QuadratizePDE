@@ -26,11 +26,10 @@ class QuadratizeRequest(BaseModel):
     equations: Optional[list[str]] = None
     vars: Optional[str] = None
     funcs: Optional[str] = None
-    format: Literal["sympy", "mathematica"] = "sympy"
-    diff_ord: int = 2
+    format: Literal["sympy", "mathematica", "latex"] = "sympy"
+    diff_ord: Optional[int] = None
     search_alg: Literal["bnb", "inn"] = "bnb"
     sort_fun: Literal["by_fun", "by_degree_order", "by_order_degree"] = "by_fun"
-    max_der_order: int = 2
     nvars_bound: int = 10
     show_nodes: bool = False
 

@@ -3,7 +3,6 @@ import type { ChangeEvent } from 'react'
 export type AdvancedOptionsValue = {
   search_alg: 'bnb' | 'inn'
   sort_fun: 'by_fun' | 'by_degree_order' | 'by_order_degree'
-  max_der_order: number
   nvars_bound: number
   show_nodes: boolean
 }
@@ -30,18 +29,18 @@ export function AdvancedOptions({ open, onToggle, value, onChange }: AdvancedOpt
       <div className={`advanced-panel ${open ? 'open' : ''}`}>
         <div className="advanced-grid">
           <label>
-            Search Algorithm
+            Search algorithm
             <select
               value={value.search_alg}
               onChange={(event) => onChange({ ...value, search_alg: event.target.value as AdvancedOptionsValue['search_alg'] })}
-              title="Branch and bound or iterative node-narrowing"
+              title="Branch and bound or incremental nearest neighbor"
             >
-              <option value="bnb">bnb</option>
-              <option value="inn">inn</option>
+              <option value="bnb">Branch and bound</option>
+              <option value="inn">Incremental nearest neighbor</option>
             </select>
           </label>
-          <label>
-            Sort Function
+          {/* <label>
+            Sort function
             <select
               value={value.sort_fun}
               onChange={(event) => onChange({ ...value, sort_fun: event.target.value as AdvancedOptionsValue['sort_fun'] })}
@@ -51,19 +50,9 @@ export function AdvancedOptions({ open, onToggle, value, onChange }: AdvancedOpt
               <option value="by_degree_order">by_degree_order</option>
               <option value="by_order_degree">by_order_degree</option>
             </select>
-          </label>
+          </label> */}
           <label>
-            Max Derivative Order
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={value.max_der_order}
-              onChange={handleNumberChange('max_der_order')}
-            />
-          </label>
-          <label>
-            Nvars Bound
+            Bound on the number of auxiliary variables
             <input
               type="number"
               min={1}

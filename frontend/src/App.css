@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #f6f1e7;
-  --surface: #fffaf1;
-  --surface-strong: #fff2df;
+  --bg: #f4f0f5;
+  --surface: #fdfafc;
+  --surface-strong: #f8f2f8;
   --ink: #1b1c1e;
   --muted: #5b5d66;
   --accent: #0f766e;
   --accent-strong: #0d9488;
   --accent-warm: #f97316;
-  --border: #e5dccb;
+  --border: #e8e0eb;
   --shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
 }
 
@@ -27,8 +27,9 @@
   z-index: -1;
   background:
     radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 55%),
-    radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.15), transparent 60%),
-    radial-gradient(circle at 80% 10%, rgba(15, 23, 42, 0.08), transparent 55%);
+    radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.12), transparent 60%),
+    radial-gradient(circle at 80% 10%, rgba(15, 23, 42, 0.08), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(120, 80, 160, 0.12), transparent 65%);
 }
 
 .app-header {
@@ -59,6 +60,50 @@
   font-size: 1.05rem;
   color: var(--muted);
   max-width: 520px;
+}
+
+.header-example-dropdown {
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.header-example-dropdown summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+  list-style: none;
+  display: inline-block;
+  padding: 0.25rem 0;
+}
+
+.header-example-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.header-example-dropdown summary::before {
+  content: '▸ ';
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.header-example-dropdown[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.header-example-dropdown summary:hover {
+  color: var(--accent-strong);
+}
+
+.header-example {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  padding-left: 0.25rem;
+}
+
+.header-example-intro {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: var(--ink);
 }
 
 .status-card {
@@ -137,6 +182,12 @@
   gap: 1.5rem;
 }
 
+.tab-description {
+  font-size: 1rem;
+  color: var(--muted);
+  margin: 0;
+}
+
 .panel-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -153,6 +204,10 @@ label {
   gap: 0.6rem;
   font-weight: 600;
   color: var(--ink);
+}
+
+.label-inline {
+  white-space: nowrap;
 }
 
 input,
@@ -194,6 +249,26 @@ textarea:focus {
 .helper-card p {
   color: var(--muted);
   font-weight: 400;
+}
+
+.equations-preview-card {
+  min-width: 0;
+}
+
+.equations-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 20rem;
+  overflow: auto;
+  min-width: 0;
+}
+
+.equations-preview-list .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.25rem;
+  min-width: min-content;
 }
 
 .hint {

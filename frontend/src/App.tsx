@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import 'katex/dist/katex.min.css'
 
@@ -12,20 +12,21 @@ import {
   type QuadratizeResponse,
 } from './services/api'
 import { ExampleTab } from './components/ExampleTab'
-import { CustomPDETab } from './components/CustomPDETab'
+import { CustomPDETab, type CustomInputs } from './components/CustomPDETab'
+import { AboutUsTab } from './components/AboutUsTab'
 import { ResultsDisplay } from './components/ResultsDisplay'
+import { LatexRenderer } from './components/LatexRenderer'
 import type { AdvancedOptionsValue } from './components/AdvancedOptions'
 
 const defaultAdvanced: AdvancedOptionsValue = {
   search_alg: 'bnb',
   sort_fun: 'by_fun',
-  max_der_order: 2,
   nvars_bound: 10,
   show_nodes: false,
 }
 
-const defaultCustomInputs = {
-  format: 'sympy' as const,
+const defaultCustomInputs: CustomInputs = {
+  format: 'sympy',
   vars: 't,x',
   funcs: 'u',
   equations: '',
@@ -33,15 +34,15 @@ const defaultCustomInputs = {
 
 function App() {
   const [apiStatus, setApiStatus] = useState<string>('checking')
-  const [activeTab, setActiveTab] = useState<'examples' | 'custom'>('examples')
+  const [activeTab, setActiveTab] = useState<'examples' | 'custom' | 'about'>('examples')
   const [examples, setExamples] = useState<ExampleSummary[]>([])
   const [selectedExampleId, setSelectedExampleId] = useState<string | null>(null)
   const [selectedExample, setSelectedExample] = useState<ExampleDetail | null>(null)
   const [examplesError, setExamplesError] = useState<string | null>(null)
 
-  const [exampleDiffOrd, setExampleDiffOrd] = useState<number>(2)
-  const [customDiffOrd, setCustomDiffOrd] = useState<number>(2)
-  const [customInputs, setCustomInputs] = useState(defaultCustomInputs)
+  const [exampleDiffOrd, setExampleDiffOrd] = useState<number | ''>('')
+  const [customDiffOrd, setCustomDiffOrd] = useState<number | ''>('')
+  const [customInputs, setCustomInputs] = useState<CustomInputs>(defaultCustomInputs)
 
   const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptionsValue>(defaultAdvanced)
   const [advancedOpen, setAdvancedOpen] = useState(false)
@@ -76,7 +77,7 @@ function App() {
     fetchExampleDetail(selectedExampleId)
       .then((detail) => {
         setSelectedExample(detail)
-        setExampleDiffOrd(detail.diff_ord)
+        setExampleDiffOrd('')
       })
       .catch((err) => setExamplesError(err.message))
   }, [selectedExampleId])
@@ -92,7 +93,7 @@ function App() {
       const response = await quadratize({
         mode: 'example',
         example_id: selectedExampleId,
-        diff_ord: exampleDiffOrd,
+        ...(exampleDiffOrd !== '' && { diff_ord: exampleDiffOrd }),
         ...advancedOptions,
       })
       setResults(response)
@@ -123,7 +124,7 @@ function App() {
         vars: customInputs.vars,
         funcs: customInputs.funcs,
         format: customInputs.format,
-        diff_ord: customDiffOrd,
+        ...(customDiffOrd !== '' && { diff_ord: customDiffOrd }),
         ...advancedOptions,
       })
       setResults(response)
@@ -134,25 +135,43 @@ function App() {
     }
   }
 
-  const tabSubtitle = useMemo(() => {
-    return activeTab === 'examples'
-      ? 'Run a curated PDE example and tweak the differentiation order.'
-      : 'Paste your own PDEs in SymPy or Mathematica syntax.'
-  }, [activeTab])
-
   return (
     <div className="app">
       <header className="app-header">
         <div>
           <p className="kicker">QuadratizePDE</p>
-          <h1>Quadratize partial differential equations with clarity.</h1>
-          <p className="subtitle">{tabSubtitle}</p>
-        </div>
-        <div className="status-card">
-          <span>API</span>
-          <strong className={apiStatus === 'healthy' ? 'healthy' : 'error'}>
-            {apiStatus}
-          </strong>
+          <h1>Find quadratic transformations for polynomial and rational PDEs</h1>
+          <p>A quadratization for a PDE is the set of auxiliary variables introduced to rewrite 
+          the right-hand side differential equations as quadratic polynomials.</p>
+          <p>This tool provides a simple interface to obtain and visualize quadratizations for polynomial and rational PDEs.</p>
+          <details className="header-example-dropdown">
+            <summary> See an example</summary>
+            <div className="header-example">
+              <p className="header-example-intro">
+                <em>Consider the PDE for the unknown function u(x,t) as</em>
+              </p>
+              <LatexRenderer
+                latex={`\\frac{\\partial u}{\\partial t} = \\frac{\\partial u}{\\partial x} + u^3`}
+              />
+              <p className="header-example-intro">
+                <em>To bring this equation into quadratic form, we define the auxiliary variable</em>
+              </p>
+              <LatexRenderer
+                latex={`w = w(u):= u^2`}
+              />
+              <p className="header-example-intro">
+                <em>Adding a differential equation for w(u), and rewriting the original equation in terms of w(u), we obtain the quadratic system</em>
+              </p>
+              <LatexRenderer
+                latex={`\\begin{aligned}
+                  \\frac{\\partial w}{\\partial t} &= 2u\\frac{\\partial u}{\\partial x} + 2w^2, \\\\
+                  \\frac{\\partial u}{\\partial t} &= \\frac{\\partial u}{\\partial x} + uw.
+                \\end{aligned}`}
+              />
+            </div>
+          </details>
+
+          <p className="subtitle" aria-hidden="true">&nbsp;</p>
         </div>
       </header>
 
@@ -171,11 +190,18 @@ function App() {
         >
           Custom PDE
         </button>
+        <button
+          className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setActiveTab('about')}
+        >
+          About Us
+        </button>
         {examplesError ? <span className="inline-alert">{examplesError}</span> : null}
       </div>
 
       <section className="workspace">
-        {activeTab === 'examples' ? (
+        {activeTab === 'examples' && (
           <ExampleTab
             examples={examples}
             selectedId={selectedExampleId}
@@ -190,7 +216,8 @@ function App() {
             onSubmit={handleQuadratizeExample}
             isLoading={isLoading}
           />
-        ) : (
+        )}
+        {activeTab === 'custom' && (
           <CustomPDETab
             inputs={customInputs}
             diffOrd={customDiffOrd}
@@ -204,11 +231,14 @@ function App() {
             isLoading={isLoading}
           />
         )}
+        {activeTab === 'about' && <AboutUsTab />}
       </section>
 
-      <section className="results">
-        <ResultsDisplay results={results} error={error} isLoading={isLoading} />
-      </section>
+      {activeTab !== 'about' && (
+        <section className="results">
+          <ResultsDisplay results={results} error={error} isLoading={isLoading} />
+        </section>
+      )}
     </div>
   )
 }

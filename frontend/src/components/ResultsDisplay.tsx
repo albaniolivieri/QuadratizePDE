@@ -10,7 +10,7 @@ type ResultsDisplayProps = {
 function renderLatexList(items: string[] | undefined, fallback: string[]) {
   const source = items && items.length ? items : fallback
   if (!source.length) {
-    return <p className="muted">No entries.</p>
+    return <p className="muted">No rational auxiliary variables.</p>
   }
 
   return (
@@ -65,11 +65,11 @@ export function ResultsDisplay({ results, error, isLoading }: ResultsDisplayProp
       </div>
 
       <section>
-        <h4>Auxiliary Variables</h4>
+        <h4>Polynomial Auxiliary Variables</h4>
         {renderLatexList(latex?.aux_vars, results.aux_vars)}
       </section>
       <section>
-        <h4>Fractional Variables</h4>
+        <h4>Rational Auxiliary Variables</h4>
         {renderLatexList(latex?.frac_vars, results.frac_vars)}
       </section>
       <section>
