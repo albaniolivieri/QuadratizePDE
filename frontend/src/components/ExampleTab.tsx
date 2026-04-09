@@ -1,7 +1,7 @@
 import type { ExampleDetail, ExampleSummary } from '../services/api'
+import { AdvancedOptions, type AdvancedOptionsValue } from './AdvancedOptions'
+import { DIFF_ORDER_INFO, InfoPopover } from './InfoPopover'
 import { LatexRenderer } from './LatexRenderer'
-import type { AdvancedOptionsValue } from './AdvancedOptions'
-import { AdvancedOptions } from './AdvancedOptions'
 
 type ExampleTabProps = {
   examples: ExampleSummary[]
@@ -35,7 +35,7 @@ export function ExampleTab({
   return (
     <div className="tab-panel">
       <p className="tab-description">Run a PDE example and select the differential order.</p>
-      <div className="panel-grid">
+      <div className="panel-grid panel-grid--examples">
         <label className="full">
           Example
           <select
@@ -54,14 +54,15 @@ export function ExampleTab({
         </label>
 
         <label>
-        <span className="label-inline">
-          Differentiation order <span className="muted">(optional)</span>
+          <span className="label-inline">
+            Differentiation order <span className="muted">(optional)</span>
+            <InfoPopover content={DIFF_ORDER_INFO} label="About differentiation order" />
           </span>
           <input
             type="number"
             min={0}
-            max={6}
-            placeholder="Default is 3 * the order of the highest derivative in the equations"
+            max={100}
+            placeholder=""
             value={diffOrd === '' ? '' : diffOrd}
             onChange={(e) => {
               const v = e.target.value

@@ -19,6 +19,7 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
         if not payload.example_id:
             raise QuadratizeServiceError("example_id is required.")
         example = get_example(payload.example_id)
+        print('example.diff_ord', example.diff_ord)
         if example is None:
             raise QuadratizeServiceError("Example not found.")
         req = QuadratizationRequest(
@@ -84,15 +85,20 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
         )
     try:
         result = run_quadratization(req)
-    except (ParseError, QuadratizationError) as exc:
+    except QuadratizationError as exc:
+        # qupde raises QuadratizationError() with no message when no quadratization exists
+        msg = str(exc).strip()
+        raise QuadratizeServiceError(msg or "Quadratization not found.") from exc
+    except ParseError as exc:
         raise QuadratizeServiceError(str(exc)) from exc
-
+    if len(result.frac_vars) > 0:
+        result.frac_vars = [(result.frac_vars[0][0], 1/result.frac_vars[0][1].as_expr())]
+        
     latex_output = {
         "aux_vars": [sp.latex(expr) for expr in result.aux_vars],
         "frac_vars": [sp.latex(expr) for expr in result.frac_vars],
         "quad_sys": [sp.latex(expr) for expr in result.quad_sys],
     }
-
     return QuadratizeResponse(
         aux_vars=[sp.sstr(expr) for expr in result.aux_vars],
         frac_vars=[sp.sstr(expr) for expr in result.frac_vars],

@@ -41,13 +41,27 @@ export type QuadratizeResponse = {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 
+function detailToMessage(detail: unknown): string {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => (typeof item === 'object' && item && 'msg' in item ? String((item as { msg: unknown }).msg) : String(item)))
+      .filter(Boolean)
+      .join('; ')
+  }
+  if (detail != null && typeof detail === 'object' && 'msg' in detail) {
+    return String((detail as { msg: unknown }).msg)
+  }
+  return ''
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const message = await response
       .json()
-      .then((data) => data.detail || data.message)
-      .catch(() => null)
-    throw new Error(message || `Request failed (${response.status})`)
+      .then((data) => detailToMessage(data?.detail) || detailToMessage(data?.message))
+      .catch(() => '')
+    throw new Error(message.trim() || `Request failed (${response.status})`)
   }
   return response.json() as Promise<T>
 }
@@ -62,13 +76,32 @@ export async function fetchExampleDetail(id: string): Promise<ExampleDetail> {
   return handleResponse<ExampleDetail>(response)
 }
 
+/** Shown when the browser cannot complete the request (e.g. network/CORS); avoids raw "Failed to fetch". */
+const QUADRATIZE_FETCH_FAILED_CUSTOM =
+  'There is an error in the formula for the equations.'
+const QUADRATIZE_FETCH_FAILED_EXAMPLE =
+  'There was an error while finding the quadratization.'
+
+function isFailedFetchError(err: unknown): boolean {
+  return err instanceof Error && /failed to fetch/i.test(err.message)
+}
+
 export async function quadratize(payload: QuadratizeRequest): Promise<QuadratizeResponse> {
-  const response = await fetch(`${API_BASE}/api/quadratize`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  return handleResponse<QuadratizeResponse>(response)
+  try {
+    const response = await fetch(`${API_BASE}/api/quadratize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse<QuadratizeResponse>(response)
+  } catch (err) {
+    if (isFailedFetchError(err)) {
+      const message =
+        payload.mode === 'custom' ? QUADRATIZE_FETCH_FAILED_CUSTOM : QUADRATIZE_FETCH_FAILED_EXAMPLE
+      throw new Error(message)
+    }
+    throw err
+  }
 }
 
 export async function fetchHealth(): Promise<'healthy' | string> {

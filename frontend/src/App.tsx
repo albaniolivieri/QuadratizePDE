@@ -139,7 +139,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div>
-          <p className="kicker">QuadratizePDE</p>
+          <p className="kicker">QuadratizeIt</p>
           <h1>Find quadratic transformations for polynomial and rational PDEs</h1>
           <p>A quadratization for a PDE is the set of auxiliary variables introduced to rewrite 
           the right-hand side differential equations as quadratic polynomials.</p>

@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react'
+import { InfoPopover, SEARCH_ALG_INFO } from './InfoPopover'
 
 export type AdvancedOptionsValue = {
   search_alg: 'bnb' | 'inn'
@@ -29,7 +30,10 @@ export function AdvancedOptions({ open, onToggle, value, onChange }: AdvancedOpt
       <div className={`advanced-panel ${open ? 'open' : ''}`}>
         <div className="advanced-grid">
           <label>
-            Search algorithm
+            <span className="label-inline">
+              Search algorithm
+              <InfoPopover content={SEARCH_ALG_INFO} label="About search algorithm" />
+            </span>
             <select
               value={value.search_alg}
               onChange={(event) => onChange({ ...value, search_alg: event.target.value as AdvancedOptionsValue['search_alg'] })}

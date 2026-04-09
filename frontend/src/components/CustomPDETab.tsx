@@ -1,6 +1,6 @@
 import type { ChangeEvent } from 'react'
-import type { AdvancedOptionsValue } from './AdvancedOptions'
-import { AdvancedOptions } from './AdvancedOptions'
+import { AdvancedOptions, type AdvancedOptionsValue } from './AdvancedOptions'
+import { DIFF_ORDER_INFO, InfoPopover } from './InfoPopover'
 
 export type CustomInputs = {
   format: 'sympy' | 'mathematica' | 'latex'
@@ -54,12 +54,13 @@ export function CustomPDETab({
         <label>
           <span className="label-inline">
             Differentiation order <span className="muted">(optional)</span>
+            <InfoPopover content={DIFF_ORDER_INFO} label="About differentiation order" />
           </span>
           <input
             type="number"
             min={0}
-            max={6}
-            placeholder="Default is 3 * the order of the highest derivative in the equations"
+            max={100}
+            placeholder=""
             value={diffOrd === '' ? '' : diffOrd}
             onChange={(e) => {
               const v = e.target.value
@@ -99,13 +100,16 @@ export function CustomPDETab({
             value={inputs.equations}
             onChange={handleChange('equations')}
           />
-          <span className="hint">
-            {inputs.format === 'latex'
-              ? 'Enter equations in LaTeX (one per line).'
-              : inputs.format === 'mathematica'
-                ? 'Enter equations in Mathematica syntax (one per line).'
-                : 'Separate multiple equations with new lines.'}
-          </span>
+          <div className="field-hints">
+            <span className="hint">
+              {inputs.format === 'latex'
+                ? 'Enter equations in LaTeX (one per line).'
+                : inputs.format === 'mathematica'
+                  ? 'Enter equations in Mathematica syntax (one per line).'
+                  : 'Separate multiple equations with new lines.'}
+            </span>
+            <span className="hint">Use the explicit notation for function variables.</span>
+          </div>
         </label>
       </div>
 
