@@ -8,6 +8,12 @@ export default defineConfig({
     port: 5173,
     watch: {
       usePolling: true
-    }
+    }, 
+  }, 
+  preview: {
+    allowedHosts: [
+      'quadratizeit.com',
+      'www.quadratizeit.com'
+    ]
   }
 })
