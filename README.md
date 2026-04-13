@@ -13,9 +13,11 @@ Web app to quadratize PDEs using the QuPDE library. Includes curated examples, c
 docker compose up --build
 ```
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- OpenAPI docs: http://localhost:8000/docs
+- App (nginx): http://localhost
+- API: http://localhost/api
+- Health: http://localhost/health
+
+Production note: TLS/HTTPS termination is handled outside Docker Compose.
 
 ## Run (Local dev)
 Backend:
