@@ -33,7 +33,6 @@ const defaultCustomInputs: CustomInputs = {
 }
 
 function App() {
-  const [apiStatus, setApiStatus] = useState<string>('checking')
   const [activeTab, setActiveTab] = useState<'examples' | 'custom' | 'about'>('examples')
   const [examples, setExamples] = useState<ExampleSummary[]>([])
   const [selectedExampleId, setSelectedExampleId] = useState<string | null>(null)
@@ -52,9 +51,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    fetchHealth()
-      .then(setApiStatus)
-      .catch(() => setApiStatus('error'))
+    void fetchHealth().catch(() => {
+      /* optional warm-up; failures surface on real API calls */
+    })
   }, [])
 
   useEffect(() => {
