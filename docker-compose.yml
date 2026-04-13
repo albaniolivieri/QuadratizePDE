@@ -13,10 +13,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: https://quadratizeit.com
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_BASE_URL=https://quadratizeit.com
     command: npm run preview -- --host --port 5173
     depends_on:
       - backend
