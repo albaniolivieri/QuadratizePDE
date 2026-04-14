@@ -39,16 +39,6 @@ npm run dev
 - `GET /api/examples/{example_id}`
 - `POST /api/quadratize`
 
-## Screenshots
-### Examples
-![Examples tab](docs/screenshots/app-examples.png)
-
-### Example run (Allen–Cahn)
-![Example results](docs/screenshots/app-example-results.png)
-
-### Custom PDE
-![Custom PDE results](docs/screenshots/app-custom-results.png)
-
 ## License
 
 MIT
