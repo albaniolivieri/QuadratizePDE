@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { QuadratizeResponse } from '../services/api'
-import { LatexRenderer } from './LatexRenderer'
+import { LatexRenderer, rewriteDerivativeLikeSubscripts } from './LatexRenderer'
 
 /** Split at the first comma with brace/paren depth 0 (for tuple-like LaTeX from SymPy). */
 function splitLatexTupleInner(s: string): [string, string] | null {
@@ -32,10 +32,17 @@ function rationalFracVarLatexToAssignment(latex: string): string | null {
   return `${parts[0]} = ${parts[1]}`
 }
 
+function formatQuadratizeDuration(ms: number) {
+  if (ms < 1000) return `${Math.round(ms)} ms`
+  return `${(ms / 1000).toFixed(2)} s`
+}
+
 type ResultsDisplayProps = {
   results: QuadratizeResponse | null
   error: string | null
   isLoading: boolean
+  /** Wall time for the last successful `/api/quadratize` round-trip (browser → server → browser). */
+  quadratizeDurationMs: number | null
 }
 
 function renderPolynomialAuxVarsList(items: string[] | undefined, fallback: string[]) {
@@ -102,7 +109,12 @@ async function copyTextToClipboard(text: string) {
   document.body.removeChild(el)
 }
 
-export function ResultsDisplay({ results, error, isLoading }: ResultsDisplayProps) {
+export function ResultsDisplay({
+  results,
+  error,
+  isLoading,
+  quadratizeDurationMs,
+}: ResultsDisplayProps) {
   const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
 
   if (isLoading) {
@@ -134,8 +146,9 @@ export function ResultsDisplay({ results, error, isLoading }: ResultsDisplayProp
 
   const latex = results.latex_output
   const latexQuadSys = latex?.quad_sys?.length ? latex.quad_sys : null
-  const quadSysLatexSource = latexQuadSys
-    ? `\\begin{aligned}\n${latexQuadSys.join(' \\\\\n')}\n\\end{aligned}`
+  const quadSysLatexForCopy = latexQuadSys?.map((line) => rewriteDerivativeLikeSubscripts(line))
+  const quadSysLatexSource = quadSysLatexForCopy?.length
+    ? `\\begin{aligned}\n${quadSysLatexForCopy.join(' \\\\\n')}\n\\end{aligned}`
     : ''
 
   return (
@@ -143,11 +156,16 @@ export function ResultsDisplay({ results, error, isLoading }: ResultsDisplayProp
       <div className="results-header">
         <h3>Quadratization Results</h3>
         <div className="meta">
-          <span>Aux vars: {results.aux_vars.length}</span>
-          <span>Frac vars: {results.frac_vars.length}</span>
-          <span>Quad sys size: {results.quad_sys.length}</span>
+          <span>Auxiliary variables: {results.aux_vars.length}</span>
+          <span>Rational auxiliary variables: {results.frac_vars.length}</span>
+          <span>Quadratic system size: {results.quad_sys.length}</span>
           {typeof results.traversed === 'number' ? <span>Traversed nodes: {results.traversed}</span> : null}
         </div>
+        {quadratizeDurationMs != null ? (
+          <div className="meta meta-duration">
+            <span>Quadratization found by QuPDE in: {formatQuadratizeDuration(quadratizeDurationMs)}</span>
+          </div>
+        ) : null}
       </div>
 
       <section>
@@ -158,9 +176,11 @@ export function ResultsDisplay({ results, error, isLoading }: ResultsDisplayProp
         <h4>Rational Auxiliary Variables</h4>
         {renderRationalAuxVarsList(latex?.frac_vars, results.frac_vars)}
       </section>
-      <section>
+      <section className="quadratic-system">
         <h4>Quadratic System</h4>
-        {renderLatexList(latex?.quad_sys, results.quad_sys)}
+        <div className="quadratic-system-scroll" role="region" aria-label="Quadratic system equations">
+          {renderLatexList(latex?.quad_sys, results.quad_sys)}
+        </div>
         <div className="results-actions">
           <button
             type="button"

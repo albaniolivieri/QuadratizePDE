@@ -55,8 +55,8 @@ export function ExampleTab({
 
         <label>
           <span className="label-inline">
-            Differentiation order <span className="muted">(optional)</span>
-            <InfoPopover content={DIFF_ORDER_INFO} label="About differentiation order" />
+            Differential order <span className="muted">(optional)</span>
+            <InfoPopover content={DIFF_ORDER_INFO} label="About the differential order" />
           </span>
           <input
             type="number"

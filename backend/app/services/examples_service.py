@@ -9,9 +9,14 @@ from app.schemas import ExampleDetail, ExampleSummary
 _REFERENCE_LINE_BREAK_RE = re.compile(r"\s+(\bReferences?:)", re.IGNORECASE)
 _LINEBREAKS_RE = re.compile(r"\s*\n+\s*")
 
+# Examples to hide from the UI.
+_EXCLUDE_EXAMPLE_NAME_TERMS: tuple[str, ...] = (
+    "arrhenius",
+)
+
 # Local display overrides (qupde registry names are short)
 _EXAMPLE_DISPLAY_NAMES: dict[str, str] = {
-    "nonlinear_heat_equation": "Nonlinear Heat Equation",
+    "nonlinear_heat_equation": "Nonlinear Heat equation",
 }
 
 
@@ -24,6 +29,10 @@ def _description_with_reference_line_break(description: str) -> str:
     # is the "References:" section (added below).
     normalized = _LINEBREAKS_RE.sub(" ", description).strip()
     return _REFERENCE_LINE_BREAK_RE.sub(r"\n\1", normalized)
+
+def _should_exclude_example(name: str) -> bool:
+    lowered = name.lower()
+    return any(term in lowered for term in _EXCLUDE_EXAMPLE_NAME_TERMS)
 
 
 def list_example_summaries() -> list[ExampleSummary]:
@@ -38,12 +47,15 @@ def list_example_summaries() -> list[ExampleSummary]:
             equations_latex=example.equations_latex,
         )
         for example in examples
+        if not _should_exclude_example(example.name)
     ]
 
 
 def get_example_detail(example_id: str) -> ExampleDetail | None:
     example = get_example(example_id)
     if example is None:
+        return None
+    if _should_exclude_example(example.name):
         return None
 
     return ExampleDetail(

@@ -1,5 +1,7 @@
 import type { ChangeEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { AdvancedOptions, type AdvancedOptionsValue } from './AdvancedOptions'
+import { LatexHelpModal, LATEX_EQUATION_PLACEHOLDER } from './LatexHelpModal'
 import { DIFF_ORDER_INFO, InfoPopover } from './InfoPopover'
 
 export type CustomInputs = {
@@ -34,6 +36,12 @@ export function CustomPDETab({
   onSubmit,
   isLoading,
 }: CustomPDETabProps) {
+  const [latexHelpOpen, setLatexHelpOpen] = useState(false)
+
+  useEffect(() => {
+    if (inputs.format !== 'latex') setLatexHelpOpen(false)
+  }, [inputs.format])
+
   const handleChange = (field: keyof CustomInputs) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       onInputsChange({ ...inputs, [field]: event.target.value })
@@ -53,8 +61,8 @@ export function CustomPDETab({
         </label>
         <label>
           <span className="label-inline">
-            Differentiation order <span className="muted">(optional)</span>
-            <InfoPopover content={DIFF_ORDER_INFO} label="About differentiation order" />
+            Differential order <span className="muted">(optional)</span>
+            <InfoPopover content={DIFF_ORDER_INFO} label="About the differential order" />
           </span>
           <input
             type="number"
@@ -87,12 +95,23 @@ export function CustomPDETab({
           />
         </label>
         <label className="full">
-          Equations
+          <span className="label-inline label-inline--equations-heading">
+            <span>Equations</span>
+            {inputs.format === 'latex' ? (
+              <button
+                type="button"
+                className="ghost-button latex-help-trigger"
+                onClick={() => setLatexHelpOpen(true)}
+              >
+                LaTeX syntax help
+              </button>
+            ) : null}
+          </span>
           <textarea
             rows={6}
             placeholder={
               inputs.format === 'latex'
-                ? '\\frac{\\partial u(t,x)}{\\partial t} = \\frac{\\partial^2 u(t,x)}{\\partial x^2} + u(t,x) - u(t,x)^3'
+                ? LATEX_EQUATION_PLACEHOLDER
                 : inputs.format === 'mathematica'
                   ? 'D[u[t,x], t] == D[u[t,x], {x,2}] + u[t,x] - u[t,x]^3'
                   : 'Derivative(u(t,x), t) = Derivative(u(t,x),(x,2)) + u(t,x) - u(t,x)**3'
@@ -102,13 +121,11 @@ export function CustomPDETab({
           />
           <div className="field-hints">
             <span className="hint">
-              {inputs.format === 'latex'
-                ? 'Enter equations in LaTeX (one per line).'
-                : inputs.format === 'mathematica'
-                  ? 'Enter equations in Mathematica syntax (one per line).'
-                  : 'Separate multiple equations with new lines.'}
+              One equation per line.
             </span>
-            <span className="hint">Use the explicit notation for function variables.</span>
+            <span className="hint">
+              Use explicit notation for dependent variables.
+            </span>
           </div>
         </label>
       </div>
@@ -123,6 +140,8 @@ export function CustomPDETab({
       <button className="primary-button" type="button" onClick={onSubmit} disabled={isLoading}>
         {isLoading ? 'Quadratizing...' : 'Quadratize'}
       </button>
+
+      <LatexHelpModal open={latexHelpOpen} onClose={() => setLatexHelpOpen(false)} />
     </div>
   )
 }

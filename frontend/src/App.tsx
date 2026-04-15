@@ -49,6 +49,7 @@ function App() {
   const [results, setResults] = useState<QuadratizeResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [quadratizeDurationMs, setQuadratizeDurationMs] = useState<number | null>(null)
 
   useEffect(() => {
     void fetchHealth().catch(() => {
@@ -88,6 +89,8 @@ function App() {
     }
     setIsLoading(true)
     setError(null)
+    setQuadratizeDurationMs(null)
+    const t0 = performance.now()
     try {
       const response = await quadratize({
         mode: 'example',
@@ -95,8 +98,10 @@ function App() {
         ...(exampleDiffOrd !== '' && { diff_ord: exampleDiffOrd }),
         ...advancedOptions,
       })
+      setQuadratizeDurationMs(performance.now() - t0)
       setResults(response)
     } catch (err) {
+      setQuadratizeDurationMs(null)
       setError(err instanceof Error ? err.message : 'Quadratization failed.')
     } finally {
       setIsLoading(false)
@@ -116,6 +121,8 @@ function App() {
 
     setIsLoading(true)
     setError(null)
+    setQuadratizeDurationMs(null)
+    const t0 = performance.now()
     try {
       const response = await quadratize({
         mode: 'custom',
@@ -126,8 +133,10 @@ function App() {
         ...(customDiffOrd !== '' && { diff_ord: customDiffOrd }),
         ...advancedOptions,
       })
+      setQuadratizeDurationMs(performance.now() - t0)
       setResults(response)
     } catch (err) {
+      setQuadratizeDurationMs(null)
       setError(err instanceof Error ? err.message : 'Quadratization failed.')
     } finally {
       setIsLoading(false)
@@ -235,7 +244,12 @@ function App() {
 
       {activeTab !== 'about' && (
         <section className="results">
-          <ResultsDisplay results={results} error={error} isLoading={isLoading} />
+          <ResultsDisplay
+            results={results}
+            error={error}
+            isLoading={isLoading}
+            quadratizeDurationMs={quadratizeDurationMs}
+          />
         </section>
       )}
     </div>

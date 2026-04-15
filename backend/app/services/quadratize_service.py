@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import sympy as sp
-import inspect
 
 from qupde.cli.constants import InputFormat, SearchAlg, SortFun
 from qupde.cli.errors import ParseError, QuadratizationError
 from qupde.cli.service import QuadratizationRequest, run_quadratization
 
 from app.examples_loader import get_example
+from app.pde_input_normalize import PdeInputNormalizeError, normalize_custom_equations
 from app.schemas import QuadratizeRequest, QuadratizeResponse
 
 class QuadratizeServiceError(Exception):
@@ -19,7 +19,6 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
         if not payload.example_id:
             raise QuadratizeServiceError("example_id is required.")
         example = get_example(payload.example_id)
-        print('example.diff_ord', example.diff_ord)
         if example is None:
             raise QuadratizeServiceError("Example not found.")
         req = QuadratizationRequest(
@@ -38,45 +37,20 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
                 "equations, vars, and funcs are required for custom mode."
             )
 
-        eq_strings = payload.equations
-        input_format = payload.format
-        if input_format == "latex":
-            try:
-                from sympy.parsing.latex import parse_latex
-            except ImportError as e:
-                raise QuadratizeServiceError(
-                    "LaTeX parsing requires the antlr4-python3-runtime package. "
-                    "Please install it with: uv sync (or pip install antlr4-python3-runtime>=4.11)"
-                ) from e
-            
-            sympy_strings = []
-            for i, latex_str in enumerate(payload.equations):
-                try:
-                    expr = parse_latex(latex_str.strip())
-                    if isinstance(expr, sp.Equality):
-                        sympy_strings.append(f"{sp.sstr(expr.lhs)} = {sp.sstr(expr.rhs)}")
-                    else:
-                        raise QuadratizeServiceError(
-                            f"Parsed LaTeX equation {i + 1} is not an equality (got: {type(expr).__name__})."
-                        )
-                except Exception as e:
-                    error_msg = str(e)
-                    if "antlr4" in error_msg.lower():
-                        raise QuadratizeServiceError(
-                            "LaTeX parsing requires the antlr4-python3-runtime package. "
-                            "Please restart the backend server after installing it with: uv sync"
-                        ) from e
-                    raise QuadratizeServiceError(
-                        f"Failed to parse LaTeX equation {i + 1}: {error_msg}"
-                    ) from e
-            eq_strings = sympy_strings
-            input_format = "sympy"
-
+        try:
+            eq_strings, ordered_vars = normalize_custom_equations(
+                payload.equations,
+                payload.format,
+                payload.vars,
+                payload.funcs,
+            )
+        except PdeInputNormalizeError as exc:
+            raise QuadratizeServiceError(str(exc)) from exc
         req = QuadratizationRequest(
             eq_strings=eq_strings,
-            indep_vars=payload.vars,
+            indep_vars=ordered_vars,
             func_names=payload.funcs,
-            input_format=InputFormat(input_format),
+            input_format=InputFormat.sympy,
             diff_ord=payload.diff_ord,
             sort_fun=SortFun(payload.sort_fun),
             nvars_bound=payload.nvars_bound,

@@ -217,6 +217,23 @@ label {
   flex-wrap: wrap;
 }
 
+.label-inline--equations-heading {
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.latex-help-trigger {
+  font-size: 0.85rem;
+  font-family: 'Space Grotesk', sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.latex-help-trigger:hover {
+  color: var(--accent-strong);
+}
+
 input,
 select,
 textarea {
@@ -393,6 +410,34 @@ textarea:focus {
 .equation-list {
   display: grid;
   gap: 0.6rem;
+  justify-items: start;
+}
+
+.quadratic-system .equation-list {
+  min-width: 0;
+  justify-items: center;
+}
+
+.quadratic-system .equation-list > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quadratic-system-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quadratic-system-scroll .equation-list {
+  width: max-content;
+  max-width: 100%;
+}
+
+.quadratic-system-scroll .katex-display {
+  overflow: visible;
 }
 
 .results-actions {
@@ -573,6 +618,146 @@ section + section {
   font-weight: 400;
   color: var(--muted);
   line-height: 1.45;
+}
+
+/* LaTeX help modal (custom PDE tab) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(27, 28, 30, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: rise 0.2s ease-out;
+}
+
+.modal-dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  max-width: min(36rem, 100%);
+  max-height: min(88vh, 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  outline: none;
+}
+
+.modal-dialog:focus-visible {
+  box-shadow: var(--shadow), 0 0 0 3px rgba(15, 118, 110, 0.25);
+}
+
+.modal-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-dialog-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.modal-dialog-close {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.modal-dialog-close:hover {
+  color: var(--ink);
+  background: var(--surface-strong);
+}
+
+.modal-dialog-body {
+  padding: 1rem 1.25rem 1.35rem;
+  overflow-y: auto;
+}
+
+.modal-dialog-lead {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.modal-dialog-subtitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.latex-help-preview {
+  margin: 0 0 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.latex-help-preview .katex-display {
+  margin: 0;
+}
+
+.latex-help-code {
+  margin: 0 0 1.15rem;
+  padding: 0.85rem 1rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--ink);
+}
+
+.latex-help-rules {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.latex-help-rules li + li {
+  margin-top: 0.5rem;
+}
+
+.inline-code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.82em;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--surface-strong);
+  padding: 0.08em 0.35em;
+  border-radius: 6px;
 }
 
 @media (max-width: 900px) {
