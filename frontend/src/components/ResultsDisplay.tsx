@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import type { QuadratizeResponse } from '../services/api'
-import { LatexRenderer, rewriteDerivativeLikeSubscripts } from './LatexRenderer'
+import {
+  LatexRenderer,
+  rewriteDerivativeLikeSubscripts,
+  type DerivativeLabels,
+} from './LatexRenderer'
 
 /** Split at the first comma with brace/paren depth 0 (for tuple-like LaTeX from SymPy). */
 function splitLatexTupleInner(s: string): [string, string] | null {
@@ -45,7 +49,23 @@ type ResultsDisplayProps = {
   quadratizeDurationMs: number | null
 }
 
-function renderPolynomialAuxVarsList(items: string[] | undefined, fallback: string[]) {
+function derivativeLabelsFromResults(results: QuadratizeResponse | null): DerivativeLabels | null {
+  const ev = results?.evolution_var?.trim()
+  const sp = results?.spatial_var?.trim()
+  if (!ev || !sp) return null
+  const labels: DerivativeLabels = { evolutionVar: ev, spatialVar: sp }
+  const evL = results?.evolution_var_latex?.trim()
+  const spL = results?.spatial_var_latex?.trim()
+  if (evL) labels.evolutionVarLatex = evL
+  if (spL) labels.spatialVarLatex = spL
+  return labels
+}
+
+function renderPolynomialAuxVarsList(
+  items: string[] | undefined,
+  fallback: string[],
+  labels: DerivativeLabels | null
+) {
   const source = items && items.length ? items : fallback
   if (!source.length) {
     return <p className="muted">No polynomial auxiliary variables.</p>
@@ -54,13 +74,21 @@ function renderPolynomialAuxVarsList(items: string[] | undefined, fallback: stri
   return (
     <div className="equation-list">
       {source.map((item, index) => (
-        <LatexRenderer key={`${item}-${index}`} latex={`w_{${index}} = ${item}`} />
+        <LatexRenderer
+          key={`${item}-${index}`}
+          latex={`w_{${index}} = ${item}`}
+          derivativeLabels={labels}
+        />
       ))}
     </div>
   )
 }
 
-function renderRationalAuxVarsList(items: string[] | undefined, fallback: string[]) {
+function renderRationalAuxVarsList(
+  items: string[] | undefined,
+  fallback: string[],
+  labels: DerivativeLabels | null
+) {
   const source = items && items.length ? items : fallback
   if (!source.length) {
     return <p className="muted">No rational auxiliary variables.</p>
@@ -70,13 +98,19 @@ function renderRationalAuxVarsList(items: string[] | undefined, fallback: string
     <div className="equation-list">
       {source.map((item, index) => {
         const assignment = rationalFracVarLatexToAssignment(item) ?? item
-        return <LatexRenderer key={`${item}-${index}`} latex={assignment} />
+        return (
+          <LatexRenderer key={`${item}-${index}`} latex={assignment} derivativeLabels={labels} />
+        )
       })}
     </div>
   )
 }
 
-function renderLatexList(items: string[] | undefined, fallback: string[]) {
+function renderLatexList(
+  items: string[] | undefined,
+  fallback: string[],
+  labels: DerivativeLabels | null
+) {
   const source = items && items.length ? items : fallback
   if (!source.length) {
     return <p className="muted">No equations to display.</p>
@@ -85,7 +119,7 @@ function renderLatexList(items: string[] | undefined, fallback: string[]) {
   return (
     <div className="equation-list">
       {source.map((item, index) => (
-        <LatexRenderer key={`${item}-${index}`} latex={item} />
+        <LatexRenderer key={`${item}-${index}`} latex={item} derivativeLabels={labels} />
       ))}
     </div>
   )
@@ -144,9 +178,10 @@ export function ResultsDisplay({
     )
   }
 
+  const labels = derivativeLabelsFromResults(results)
   const latex = results.latex_output
   const latexQuadSys = latex?.quad_sys?.length ? latex.quad_sys : null
-  const quadSysLatexForCopy = latexQuadSys?.map((line) => rewriteDerivativeLikeSubscripts(line))
+  const quadSysLatexForCopy = latexQuadSys?.map((line) => rewriteDerivativeLikeSubscripts(line, labels))
   const quadSysLatexSource = quadSysLatexForCopy?.length
     ? `\\begin{aligned}\n${quadSysLatexForCopy.join(' \\\\\n')}\n\\end{aligned}`
     : ''
@@ -170,16 +205,16 @@ export function ResultsDisplay({
 
       <section>
         <h4>Polynomial Auxiliary Variables</h4>
-        {renderPolynomialAuxVarsList(latex?.aux_vars, results.aux_vars)}
+        {renderPolynomialAuxVarsList(latex?.aux_vars, results.aux_vars, labels)}
       </section>
       <section>
         <h4>Rational Auxiliary Variables</h4>
-        {renderRationalAuxVarsList(latex?.frac_vars, results.frac_vars)}
+        {renderRationalAuxVarsList(latex?.frac_vars, results.frac_vars, labels)}
       </section>
       <section className="quadratic-system">
         <h4>Quadratic System</h4>
         <div className="quadratic-system-scroll" role="region" aria-label="Quadratic system equations">
-          {renderLatexList(latex?.quad_sys, results.quad_sys)}
+          {renderLatexList(latex?.quad_sys, results.quad_sys, labels)}
         </div>
         <div className="results-actions">
           <button

@@ -56,3 +56,19 @@ class QuadratizeResponse(BaseModel):
     quad_sys: list[str] = Field(default_factory=list)
     traversed: Optional[int] = None
     latex_output: LatexOutput = Field(default_factory=LatexOutput)
+    evolution_var: Optional[str] = Field(
+        default=None,
+        description="Evolution (first) independent variable name for LaTeX derivative display.",
+    )
+    spatial_var: Optional[str] = Field(
+        default=None,
+        description="Spatial (second) independent variable name for LaTeX derivative display.",
+    )
+    evolution_var_latex: Optional[str] = Field(
+        default=None,
+        description="Optional LaTeX for ∂ denominator (evolution); ASCII name still in evolution_var.",
+    )
+    spatial_var_latex: Optional[str] = Field(
+        default=None,
+        description="Optional LaTeX for ∂ denominator (spatial); ASCII name still in spatial_var.",
+    )

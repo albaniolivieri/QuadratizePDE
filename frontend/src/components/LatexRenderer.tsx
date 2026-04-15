@@ -1,15 +1,61 @@
 import { BlockMath, InlineMath } from 'react-katex'
 
+export type DerivativeLabels = {
+  evolutionVar: string
+  spatialVar: string
+  /** LaTeX for \\partial denominator; when omitted, derived from the ASCII names. */
+  evolutionVarLatex?: string
+  spatialVarLatex?: string
+}
+
 type LatexRendererProps = {
   latex: string
   inline?: boolean
+  derivativeLabels?: DerivativeLabels | null
 }
 
 function partialPow(n: number) {
   return n > 1 ? `^{${n}}` : ''
 }
 
-function rewriteOneDerivativeSubscript(
+function textInMathVar(name: string): string {
+  if (/^[a-zA-Z]$/.test(name)) return name
+  return `\\text{${name.replace(/\\/g, '\\\\').replace(/}/g, '\\}').replace(/%/g, '\\%')}}`
+}
+function rewriteWithDerivativeLabels(
+  full: string,
+  name: string,
+  sub: string,
+  labels: DerivativeLabels
+): string {
+  const { evolutionVar, spatialVar } = labels
+  const denSpatial = labels.spatialVarLatex ?? textInMathVar(spatialVar)
+  const denEvolution = labels.evolutionVarLatex ?? textInMathVar(evolutionVar)
+  if (!sub) return full
+
+  for (let order = 40; order >= 1; order -= 1) {
+    const suf = `${spatialVar}${order}`
+    if (sub.endsWith(suf)) {
+      const prefix = sub.slice(0, sub.length - suf.length)
+      const baseVar = prefix ? `${name}_{${prefix}}` : name
+      const den = denSpatial
+      const np = partialPow(order)
+      const dp = partialPow(order)
+      return `\\frac{\\partial${np} ${baseVar}}{\\partial ${den}${dp}}`
+    }
+  }
+
+  if (sub.endsWith(evolutionVar)) {
+    const prefix = sub.slice(0, sub.length - evolutionVar.length)
+    const baseVar = prefix ? `${name}_{${prefix}}` : name
+    const den = denEvolution
+    return `\\frac{\\partial ${baseVar}}{\\partial ${den}}`
+  }
+
+  return full
+}
+
+function rewriteLegacyXtSubscript(
   full: string,
   name: string,
   bracedSub: string | undefined,
@@ -39,25 +85,40 @@ function rewriteOneDerivativeSubscript(
   return `\\frac{\\partial${partialPow(order)} ${baseVar}}{\\partial ${derivVar}${partialPow(order)}}`
 }
 
-/** Normalizes subscript-style x/t derivatives for KaTeX and for copy-to-clipboard. */
-export function rewriteDerivativeLikeSubscripts(input: string) {
+function rewriteOneDerivativeSubscript(
+  full: string,
+  name: string,
+  bracedSub: string | undefined,
+  bareSub: string | undefined,
+  labels?: DerivativeLabels | null
+) {
+  const sub = (bracedSub ?? bareSub ?? '').trim()
+  if (labels?.evolutionVar && labels?.spatialVar) {
+    const out = rewriteWithDerivativeLabels(full, name, sub, labels)
+    if (out !== full) return out
+  }
+  return rewriteLegacyXtSubscript(full, name, bracedSub, bareSub)
+}
+
+/** Normalizes qupde/SymPy subscript-style derivatives for KaTeX and copy-to-clipboard. */
+export function rewriteDerivativeLikeSubscripts(input: string, labels?: DerivativeLabels | null) {
   const reCommand = /(\\[A-Za-z]+)_(?:\{([^}]+)\}|([A-Za-z0-9]+))/g
   const rePlain = /(?<![\\{])([A-Za-z]+)_(?:\{([^}]+)\}|([A-Za-z0-9]+))/g
 
   return input
-    .replace(reCommand, (full, name, braced, bare) =>
-      rewriteOneDerivativeSubscript(full, name, braced, bare)
+    .replace(reCommand, (full, cmdName, braced, bare) =>
+      rewriteOneDerivativeSubscript(full, cmdName, braced, bare, labels)
     )
-    .replace(rePlain, (full, name, braced, bare) =>
-      rewriteOneDerivativeSubscript(full, name, braced, bare)
+    .replace(rePlain, (full, wordName, braced, bare) =>
+      rewriteOneDerivativeSubscript(full, wordName, braced, bare, labels)
     )
 }
 
-export function LatexRenderer({ latex, inline = false }: LatexRendererProps) {
+export function LatexRenderer({ latex, inline = false, derivativeLabels = null }: LatexRendererProps) {
   if (!latex) {
     return <span className="muted">No LaTeX provided.</span>
   }
 
-  const normalized = rewriteDerivativeLikeSubscripts(latex)
+  const normalized = rewriteDerivativeLikeSubscripts(latex, derivativeLabels)
   return inline ? <InlineMath math={normalized} /> : <BlockMath math={normalized} />
 }

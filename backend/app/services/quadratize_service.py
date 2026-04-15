@@ -14,6 +14,17 @@ class QuadratizeServiceError(Exception):
     pass
 
 
+def _evolution_spatial_from_example_vars(vars_csv: str, first_indep: str) -> tuple[str, str]:
+    parts = [p.strip() for p in vars_csv.split(",") if p.strip()]
+    fi = first_indep.strip()
+    others = [p for p in parts if p != fi]
+    if others:
+        return fi, others[0]
+    if len(parts) == 2:
+        return (fi, parts[1]) if parts[0] == fi else (fi, parts[0])
+    return fi, "x"
+
+
 def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
     if payload.mode == "example":
         if not payload.example_id:
@@ -21,6 +32,7 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
         example = get_example(payload.example_id)
         if example is None:
             raise QuadratizeServiceError("Example not found.")
+        evolution_var, spatial_var = _evolution_spatial_from_example_vars(example.vars, example.first_indep)
         req = QuadratizationRequest(
             func_eq=example.func_eq,
             indep_symbol=sp.symbols(example.first_indep),
@@ -46,6 +58,8 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
             )
         except PdeInputNormalizeError as exc:
             raise QuadratizeServiceError(str(exc)) from exc
+        ov = [p.strip() for p in ordered_vars.split(",") if p.strip()]
+        evolution_var, spatial_var = (ov[0], ov[1]) if len(ov) == 2 else (ov[0] if ov else "t", "x")
         req = QuadratizationRequest(
             eq_strings=eq_strings,
             indep_vars=ordered_vars,
@@ -73,10 +87,24 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
         "frac_vars": [sp.latex(expr) for expr in result.frac_vars],
         "quad_sys": [sp.latex(expr) for expr in result.quad_sys],
     }
+
+    evolution_var_latex: str | None = None
+    spatial_var_latex: str | None = None
+    if (
+        payload.mode == "example"
+        and payload.example_id == "solar_wind"
+        and spatial_var == "phi"
+    ):
+        spatial_var_latex = r"\phi"
+
     return QuadratizeResponse(
         aux_vars=[sp.sstr(expr) for expr in result.aux_vars],
         frac_vars=[sp.sstr(expr) for expr in result.frac_vars],
         quad_sys=[sp.sstr(expr) for expr in result.quad_sys],
         traversed=result.traversed,
         latex_output=latex_output,
+        evolution_var=evolution_var,
+        spatial_var=spatial_var,
+        evolution_var_latex=evolution_var_latex,
+        spatial_var_latex=spatial_var_latex,
     )
