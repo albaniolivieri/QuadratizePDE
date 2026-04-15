@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import sympy as sp
 
 from qupde.cli.constants import InputFormat, SearchAlg, SortFun
@@ -72,7 +74,9 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
             show_nodes=payload.show_nodes,
         )
     try:
+        t0 = time.perf_counter()
         result = run_quadratization(req)
+        quadratize_compute_ms = (time.perf_counter() - t0) * 1000.0
     except QuadratizationError as exc:
         # qupde raises QuadratizationError() with no message when no quadratization exists
         msg = str(exc).strip()
@@ -103,6 +107,7 @@ def quadratize_request(payload: QuadratizeRequest) -> QuadratizeResponse:
         quad_sys=[sp.sstr(expr) for expr in result.quad_sys],
         traversed=result.traversed,
         latex_output=latex_output,
+        quadratize_compute_ms=quadratize_compute_ms,
         evolution_var=evolution_var,
         spatial_var=spatial_var,
         evolution_var_latex=evolution_var_latex,

@@ -32,6 +32,7 @@ export type QuadratizeResponse = {
   frac_vars: string[]
   quad_sys: string[]
   traversed?: number | null
+  quadratize_compute_ms?: number | null
   evolution_var?: string | null
   spatial_var?: string | null
   evolution_var_latex?: string | null

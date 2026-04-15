@@ -90,7 +90,6 @@ function App() {
     setIsLoading(true)
     setError(null)
     setQuadratizeDurationMs(null)
-    const t0 = performance.now()
     try {
       const response = await quadratize({
         mode: 'example',
@@ -98,7 +97,7 @@ function App() {
         ...(exampleDiffOrd !== '' && { diff_ord: exampleDiffOrd }),
         ...advancedOptions,
       })
-      setQuadratizeDurationMs(performance.now() - t0)
+      setQuadratizeDurationMs(null)
       setResults(response)
     } catch (err) {
       setQuadratizeDurationMs(null)
@@ -122,7 +121,6 @@ function App() {
     setIsLoading(true)
     setError(null)
     setQuadratizeDurationMs(null)
-    const t0 = performance.now()
     try {
       const response = await quadratize({
         mode: 'custom',
@@ -133,7 +131,7 @@ function App() {
         ...(customDiffOrd !== '' && { diff_ord: customDiffOrd }),
         ...advancedOptions,
       })
-      setQuadratizeDurationMs(performance.now() - t0)
+      setQuadratizeDurationMs(null)
       setResults(response)
     } catch (err) {
       setQuadratizeDurationMs(null)

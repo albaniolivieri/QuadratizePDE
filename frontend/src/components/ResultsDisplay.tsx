@@ -45,7 +45,7 @@ type ResultsDisplayProps = {
   results: QuadratizeResponse | null
   error: string | null
   isLoading: boolean
-  /** Wall time for the last successful `/api/quadratize` round-trip (browser → server → browser). */
+  /** Deprecated: browser round-trip timer; kept for fallback display only. */
   quadratizeDurationMs: number | null
 }
 
@@ -178,6 +178,8 @@ export function ResultsDisplay({
     )
   }
 
+  const computeMs = results.quadratize_compute_ms ?? quadratizeDurationMs
+
   const labels = derivativeLabelsFromResults(results)
   const latex = results.latex_output
   const latexQuadSys = latex?.quad_sys?.length ? latex.quad_sys : null
@@ -196,9 +198,9 @@ export function ResultsDisplay({
           <span>Quadratic system size: {results.quad_sys.length}</span>
           {typeof results.traversed === 'number' ? <span>Traversed nodes: {results.traversed}</span> : null}
         </div>
-        {quadratizeDurationMs != null ? (
+        {computeMs != null ? (
           <div className="meta meta-duration">
-            <span>Quadratization found by QuPDE in: {formatQuadratizeDuration(quadratizeDurationMs)}</span>
+            <span>Quadratization found by QuPDE in: {formatQuadratizeDuration(computeMs)}</span>
           </div>
         ) : null}
       </div>

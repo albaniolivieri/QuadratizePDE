@@ -56,6 +56,10 @@ class QuadratizeResponse(BaseModel):
     quad_sys: list[str] = Field(default_factory=list)
     traversed: Optional[int] = None
     latex_output: LatexOutput = Field(default_factory=LatexOutput)
+    quadratize_compute_ms: Optional[float] = Field(
+        default=None,
+        description="Backend compute time (ms) spent running the quadratization algorithm.",
+    )
     evolution_var: Optional[str] = Field(
         default=None,
         description="Evolution (first) independent variable name for LaTeX derivative display.",
